@@ -1,3 +1,4 @@
 /ADNI
 /docs
 *.ipynb
+/__pycache__
