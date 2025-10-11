@@ -193,5 +193,109 @@ class ConvNeXtDownsamplingLayer(nn.Module):
         """Apply downsampling to the input feature map."""
         return self.downsampling_layer(x)
 
+class ConvNext(nn.Module):
+    """
+    ConvNeXt Model Implementation.
 
+    This class builds a ConvNeXt architecture composed of multiple stages, 
+    each consisting of ConvNeXt blocks. It performs patch embedding, 
+    hierarchical feature extraction, and classification.
 
+    Args:
+        num_input_image_channels (int): Number of input image channels (e.g., 3 for RGB).
+        num_classes (int): Number of output classes for classification.
+        num_blocks_each_stage (list[int]): Number of ConvNeXt blocks in each stage.
+        num_channels (list[int]): Channel dimensions for each stage.
+        stochastic_depth_rate (float): Maximum drop path rate for stochastic depth regularization.
+        layer_scale_initial_value (float): Initial scaling value for layer scale parameters.
+
+    Attributes:
+        downsampling_layers (nn.ModuleList): Sequential patchify + downsampling layers.
+        stages (nn.ModuleList): Hierarchical ConvNeXt stages containing multiple ConvNeXtBlocks.
+        avgpool (nn.AdaptiveAvgPool2d): Global average pooling layer.
+        classifier (nn.Sequential): Flatten + linear layer for classification output.
+    """
+    def __init__(
+        self,
+        num_input_image_channels=3,
+        num_classes=2,
+        num_blocks_each_stage=[3, 3, 9, 3],
+        num_channels=[96, 192, 384, 768],
+        stochastic_depth_rate=0.0,
+        layer_scale_initial_value=1e-6
+    ):
+        super().__init__()
+
+        self.num_stages = len(num_blocks_each_stage)
+        self.downsampling_layers = nn.ModuleList()
+
+        # ---- Patchify stem ----
+        # The first layer converts the image into non-overlapping patches using stride=4 convolution
+        patchify_layer = ConvNeXtDownsamplingLayer(
+            input_channels=num_input_image_channels,
+            output_channels=num_channels[0],
+            has_patchify_stem=True
+        )
+        self.downsampling_layers.append(patchify_layer)
+
+        # ---- Downsampling layers ----
+        # Subsequent layers reduce spatial resolution while increasing channel depth
+        for i in range(len(num_channels) - 1):
+            downsampling_layer = ConvNeXtDownsamplingLayer(
+                input_channels=num_channels[i],
+                output_channels=num_channels[i + 1]
+            )
+            self.downsampling_layers.append(downsampling_layer)
+        
+        # ---- Stochastic depth rates ----
+        # Linearly increase the drop path rate across all blocks
+        stochastic_depth_rates = [
+            tensor.item() for tensor in torch.linspace(
+                start=0,
+                end=stochastic_depth_rate,
+                steps=sum(num_blocks_each_stage)
+            )
+        ]
+
+        # ---- ConvNeXt Stages ----
+        # Each stage consists of multiple ConvNeXtBlocks operating at a specific resolution
+        self.stages = nn.ModuleList()
+        current_num_blocks = 0
+        for i in range(self.num_stages):
+            next_num_blocks = current_num_blocks + num_blocks_each_stage[i]
+            stage = ConvNextStage(
+                num_blocks=num_blocks_each_stage[i],
+                input_channels=num_channels[i],
+                stochastic_depth_rates=stochastic_depth_rates[
+                    current_num_blocks : next_num_blocks
+                ],
+                layer_scale_initial_value=layer_scale_initial_value
+            )
+            self.stages.append(stage)
+            current_num_blocks = next_num_blocks
+        
+        # ---- Classification head ----
+        # Global average pooling followed by linear classifier
+        self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(in_features=num_channels[-1], out_features=num_classes)
+        )
+
+    def forward(self, x):
+        """
+        Forward pass through the ConvNeXt model.
+        Args:
+            x (Tensor): Input tensor of shape (N, C, H, W)
+        Returns:
+            Tensor: Output logits of shape (N, num_classes)
+        """
+        # Downsample and process through ConvNeXt stages
+        for i in range(self.num_stages):
+            x = self.downsampling_layers[i](x)
+            x = self.stages[i](x)
+
+        # Global average pooling and classification
+        x = self.avgpool(x)
+        x = self.classifier(x)
+        return x
