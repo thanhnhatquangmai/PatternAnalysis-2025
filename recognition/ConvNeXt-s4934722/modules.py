@@ -141,6 +141,57 @@ class ConvNextStage(nn.Module):
             torch.Tensor: Output tensor of shape (N, C, H, W)
         """
         return self.stage(x)
+    
+class ConvNeXtDownsamplingLayer(nn.Module):
+    """
+    Downsampling layer for ConvNeXt architecture.
+
+    This layer reduces the spatial resolution (height and width) of the input feature map
+    while increasing or changing the number of channels. It can either:
+    - Act as a *patchify stem* (used in the first stage), converting the input image into 
+        smaller non-overlapping patches, or
+    - Perform standard downsampling between stages.
+
+    Args:
+        input_channels (int): Number of channels in the input feature map.
+        output_channels (int): Number of channels to output after downsampling.
+        has_patchify_stem (bool): 
+            If True, uses a 4x4 convolution with stride 4 (patchify stem).
+            If False, uses a 2x2 convolution with stride 2 (regular downsampling).
+    """
+    def __init__(self, input_channels, output_channels, has_patchify_stem=False):
+        super().__init__()
+        if has_patchify_stem:
+            # Initial patch embedding stem
+            # Converts raw image patches into feature representations
+            self.downsampling_layer = nn.Sequential(
+                nn.Conv2d(
+                    in_channels=input_channels,
+                    out_channels=output_channels,
+                    kernel_size=4, # Non-overlapping 4x4 patches
+                    stride=4
+                ),
+                nn.GroupNorm( # Layer Normalization
+                    num_groups=1, num_channels=output_channels, eps=1e-6
+                )
+            )
+        else:
+            # Standard downsampling between ConvNeXt stages
+            self.downsampling_layer = nn.Sequential(
+                nn.GroupNorm( # Layer Normalization
+                    num_groups=1, num_channels=input_channels, eps=1e-6
+                ),
+                nn.Conv2d(
+                    in_channels=input_channels,
+                    out_channels=output_channels,
+                    kernel_size=2, # Reduces spatial dimensions by half
+                    stride=2
+                )
+            )
+
+    def forward(self, x):
+        """Apply downsampling to the input feature map."""
+        return self.downsampling_layer(x)
 
 
 
