@@ -10,55 +10,72 @@ Description:
 
 import os
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 
 DEFAULT_ROOT_DIR = os.path.abspath("./ADNI")
 DEFAULT_BATCH_SIZE = 128
 DEFAULT_NUM_WORKERS = 0
 
-def get_data_loader(
-        is_train: bool,
-        batch_size: int = DEFAULT_BATCH_SIZE,
-        num_workers: int = DEFAULT_NUM_WORKERS,
-        root_dir: str = DEFAULT_ROOT_DIR
-) -> DataLoader:
+def get_dataloader(
+    is_train: bool,
+    batch_size: int = DEFAULT_BATCH_SIZE,
+    num_workers: int = DEFAULT_NUM_WORKERS,
+    root_dir: str = DEFAULT_ROOT_DIR,
+    validate_split: float = 0.1
+):
     """
-    Returns a PyTorch DataLoader for the ADNI dataset.
+    Returns PyTorch DataLoaders for ADNI dataset (train, val, or test).
 
     Args:
-        is_train (bool): Whether to return the training or test loader.
+        is_train (bool): Whether to load training/validation or test data.
         batch_size (int): Batch size for DataLoader.
         num_workers (int): Number of worker processes for data loading.
         root_dir (str): Root directory containing the ADNI dataset.
+        validate_split (float): Fraction of training data to use for validation.
 
     Returns:
-        DataLoader: PyTorch DataLoader object.
+        DataLoader | tuple(DataLoader, DataLoader): 
+            - If is_train=True, returns (train_loader, val_loader)
+            - If is_train=False, returns test_loader
     """
-    # Determine directory based on train/test
     if is_train:
         dir = os.path.join(root_dir, "AD_NC", "train")
     else:
         dir = os.path.join(root_dir, "AD_NC", "test")
 
-    # Build transform
     transform = build_transform(is_train)
-
-    # Print transform steps
-    print("Transform = ")
-    for t in transform.transforms:
-        print(t)
-    print("---------------------------")
-
-    # Create dataset and dataloader
     dataset = datasets.ImageFolder(root=dir, transform=transform)
-    dataloader = DataLoader(
-        dataset=dataset,
-        batch_size=batch_size,
-        shuffle=is_train,
-        num_workers=num_workers
-    )
 
-    return dataloader
+    if is_train:
+        # Split into train and validation subsets
+        validate_size = int(len(dataset) * validate_split)
+        train_size = len(dataset) - validate_size
+        train_dataset, validate_dataset = random_split(dataset, [train_size, validate_size])
+
+        train_dataloader = DataLoader(
+            dataset=train_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers
+        )
+        validate_dataloader = DataLoader(
+            dataset=validate_dataset,
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers
+        )
+
+        return train_dataloader, validate_dataloader
+
+    else:
+        # Test loader
+        dataloader = DataLoader(
+            dataset=dataset,
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers
+        )
+        return dataloader
 
 def build_transform(is_train: bool) -> transforms.Compose:
     """
