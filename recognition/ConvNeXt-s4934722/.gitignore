@@ -2,3 +2,5 @@
 /docs
 *.ipynb
 /__pycache__
+*.pth
+/plots
