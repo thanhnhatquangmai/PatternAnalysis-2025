@@ -127,8 +127,8 @@ def plot_training_curves(train_losses, val_losses, train_accs, val_accs, output_
 def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
     if model is None:
         model = ConvNext(num_input_image_channels=3, num_classes=2).to(DEVICE)
-        model.load_state_dict(torch.load("./best_convnext.pth"))
-        batch_size = 32
+        model.load_state_dict(torch.load("best_convnext.pth"))
+        batch_size = 128
     # After your training loop, add test inference
     print("===== Running inference on test set =====")
 
@@ -160,7 +160,7 @@ def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
     os.makedirs("plots", exist_ok=True)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["AD", "NC"])
     disp.plot(cmap="Blues")
-    plt.title("Test Set Confusion Matrix")
+    plt.title(f"Test Set Confusion Matrix (Acc: {acc:.4f})")
     plt.savefig("plots/test_confusion_matrix.png")
     plt.close()
     print("Saved test confusion matrix to plots/test_confusion_matrix.png")
@@ -228,8 +228,8 @@ def main():
     # Save confusion matrix of best model
     disp = ConfusionMatrixDisplay(confusion_matrix=best_cm, display_labels=["AD", "NC"])
     disp.plot(cmap="Blues")
-    plt.title(f"Best Confusion Matrix (Val Acc: {best_val_acc:.2f}%)")
-    cm_path = os.path.join("plots", "confusion_matrix.png")
+    plt.title(f"Best Confusion Matrix (Acc: {val_acc:.4f})")
+    cm_path = os.path.join("plots", "val_confusion_matrix.png")
     plt.savefig(cm_path)
     plt.close()
     print(f"Saved confusion matrix to {cm_path}")
@@ -237,4 +237,4 @@ def main():
     run_inference_on_test_dataset(model=model)
 
 if __name__ == "__main__":
-    run_inference_on_test_dataset()
+    main()
