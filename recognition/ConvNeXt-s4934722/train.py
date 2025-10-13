@@ -24,7 +24,7 @@ if not IN_COLAB:
     from modules import ConvNext
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-EPOCHS = 500
+EPOCHS = 450
 LEARNING_RATE = 4e-3
 BATCH_SIZE = 512
 WEIGHT_DECAY = 0.01
