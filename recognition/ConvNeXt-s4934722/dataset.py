@@ -1,12 +1,13 @@
-'''
+"""
 dataset.py
 Author: Thanh Nhat Quang Mai - 49347227
+Date: 14th October 2025
 Description:
     Data loading utilities for the ADNI Alzheimer's dataset.
     - Provides PyTorch DataLoader for training and testing.
     - Includes data transformations with basic augmentations for training.
     - Supports grayscale-to-3-channel conversion, resizing, normalization.
-'''
+"""
 
 import os
 import torch
@@ -120,7 +121,6 @@ def build_transform(is_train: bool) -> transforms.Compose:
             transforms.RandomAffine(
                 degrees=0, translate=(0.05, 0.05)
             ), # Small translation to shift position
-            # transforms.RandAugment(num_ops=9, magnitude=5),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[ADNI_DEFAULT_MEAN] * 3, # 3 channels

@@ -1,3 +1,12 @@
+"""
+train.py
+Author: Thanh Nhat Quang Mai - 49347227
+Date: 14th October 2025
+Description:
+    This script trains a ConvNeXt-based classifier on the ADNI dataset using PyTorch.
+    It includes functions for training, validation, plotting metrics, and the main training loop.
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -23,14 +32,29 @@ if not IN_COLAB:
     from dataset import get_dataloader
     from modules import ConvNext
 
+# Configuration
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 EPOCHS = 450
 LEARNING_RATE = 4e-3
+MIN_LEARNING_RATE = 5e-5
 BATCH_SIZE = 512
 WEIGHT_DECAY = 0.01
 LABEL_SMOOTHING = 0.1
 
 def train_one_epoch(model, dataloader, criterion, optimizer, epoch):
+    """
+    Train the model for one epoch.
+
+    Args:
+        model (nn.Module): The neural network model.
+        dataloader (DataLoader): Training data loader.
+        criterion (nn.Module): Loss function.
+        optimizer (Optimizer): Optimization algorithm.
+        epoch (int): Current epoch number.
+
+    Returns:
+        tuple[float, float]: Average loss and accuracy for this epoch.
+    """
     model.train()
     total_loss, correct, total = 0.0, 0, 0
 
@@ -54,6 +78,19 @@ def train_one_epoch(model, dataloader, criterion, optimizer, epoch):
     return avg_loss, accuracy
 
 def validate(model, dataloader, criterion, epoch):
+    """
+    Evaluate the model on the validation dataset.
+
+    Args:
+        model (nn.Module): The neural network model.
+        dataloader (DataLoader): Validation data loader.
+        criterion (nn.Module): Loss function.
+        epoch (int): Current epoch number.
+
+    Returns:
+        tuple[float, float, float, float, float, np.ndarray]:
+            Average loss, accuracy, precision, recall, F1 score, and confusion matrix.
+    """
     model.eval()
     total_loss, correct, total = 0.0, 0, 0
     all_preds, all_labels = [], []
@@ -125,6 +162,13 @@ def plot_training_curves(train_losses, val_losses, train_accs, val_accs, output_
     print(f"Saved training curves to {save_path}")
 
 def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
+    """
+    Run inference on the test dataset and display performance metrics.
+
+    Args:
+        model (nn.Module | None): Trained model to evaluate. Loads best checkpoint if None.
+        batch_size (int): Batch size for testing.
+    """
     if model is None:
         model = ConvNext(num_input_image_channels=3, num_classes=2).to(DEVICE)
         model.load_state_dict(torch.load("best_convnext.pth"))
@@ -165,9 +209,15 @@ def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
     plt.close()
     print("Saved test confusion matrix to plots/test_confusion_matrix.png")
 
-    return acc
-
 def main():
+    """
+    Main training pipeline:
+    - Loads dataset
+    - Initializes model, optimizer, loss and scheduler
+    - Trains and validates over multiple epochs
+    - Saves best model checkpoint
+    - Plots training curves and confusion matrices
+    """
     print(f"Using device: {DEVICE}")
 
     # Load data
@@ -176,10 +226,12 @@ def main():
 
     # Model, loss, optimizer
     model = ConvNext(num_input_image_channels=3, num_classes=2).to(DEVICE)
-    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    criterion = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING)
     optimizer = optim.AdamW(
         model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
     )
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(
+        optimizer=optimizer, T_max=EPOCHS, eta_min=MIN_LEARNING_RATE)
 
     # Track metrics
     train_losses, val_losses = [], []
@@ -194,7 +246,7 @@ def main():
         train_loss, train_acc = train_one_epoch(model, train_loader, criterion, optimizer, epoch)
         val_loss, val_acc, precision, recall, f1, cm = validate(model, val_loader, criterion, epoch)
 
-        # scheduler.step()
+        scheduler.step()
 
         train_losses.append(train_loss)
         val_losses.append(val_loss)
