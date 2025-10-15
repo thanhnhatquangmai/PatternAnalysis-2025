@@ -10,7 +10,6 @@ Description:
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 from sklearn.metrics import (
     confusion_matrix,
@@ -59,7 +58,7 @@ def train_one_epoch(model, dataloader, criterion, optimizer, epoch):
     model.train()
     total_loss, correct, total = 0.0, 0, 0
 
-    for images, labels in tqdm(dataloader, desc=f"Epoch {epoch} [Train]"):
+    for images, labels in dataloader:
         images, labels = images.to(DEVICE), labels.to(DEVICE)
         
         optimizer.zero_grad()
@@ -97,7 +96,7 @@ def validate(model, dataloader, criterion, epoch):
     all_preds, all_labels = [], []
 
     with torch.inference_mode():
-        for images, labels in tqdm(dataloader, desc=f"Epoch {epoch} [Val]"):
+        for images, labels in dataloader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             outputs = model(images)
             loss = criterion(outputs, labels)
@@ -184,7 +183,7 @@ def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
     all_preds, all_labels = [], []
 
     with torch.inference_mode():
-        for images, labels in tqdm(test_loader, desc="Test Set Inference"):
+        for images, labels in test_loader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             outputs = model(images)
             _, predicted = outputs.max(1)
