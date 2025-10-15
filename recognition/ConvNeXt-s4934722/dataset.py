@@ -135,12 +135,13 @@ def build_transform(is_train: bool) -> transforms.Compose:
             transforms.RandomRotation(10),
             transforms.ColorJitter(brightness=0.2, contrast=0.2),
             transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
+            transforms.RandAugment(5, 5),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[ADNI_DEFAULT_MEAN] * 3,
                 std=[ADNI_DEFAULT_STD] * 3
             ),
-            transforms.RandomErasing(p=0.25)
+            transforms.RandomErasing(p=0.25),
         ])
     else:
         return transforms.Compose([

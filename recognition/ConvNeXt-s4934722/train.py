@@ -35,9 +35,10 @@ if not IN_COLAB:
 # Configuration
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 EPOCHS = 450
+PATIENCE = 50  # Stop if no improvement after PATIENCE number of epochs
 LEARNING_RATE = 4e-3
 MIN_LEARNING_RATE = 5e-5
-BATCH_SIZE = 512
+BATCH_SIZE = 256
 WEIGHT_DECAY = 0.01
 LABEL_SMOOTHING = 0.1
 
@@ -239,8 +240,7 @@ def main():
 
     best_val_acc = 0.0
     best_cm = None
-    patience = 50  # Stop if no improvement after patience number of epochs
-    epochs_no_improve = 0  # Counter for patience
+    epochs_no_improve = 0  # Counter for PATIENCE
 
     for epoch in range(1, EPOCHS + 1):
         train_loss, train_acc = train_one_epoch(model, train_loader, criterion, optimizer, epoch)
@@ -264,15 +264,15 @@ def main():
             best_cm = cm
             torch.save(model.state_dict(), "best_convnext.pth")
             print(f"===== 💖 Saved new best model (Val Acc: {best_val_acc:.4f}) =====")
-            epochs_no_improve = 0  # reset patience counter
+            epochs_no_improve = 0  # reset PATIENCE counter
         else:
             epochs_no_improve += 1
-            print(f"No improvement for {epochs_no_improve}/{patience} epochs.")
+            print(f"No improvement for {epochs_no_improve}/{PATIENCE} epochs.")
 
         # Early stopping condition
-        if epochs_no_improve >= patience:
-            print(f"===== Early stopping triggered after {patience} epochs with no improvement =====")
-            break
+        # if epochs_no_improve >= PATIENCE:
+        #     print(f"===== Early stopping triggered after {PATIENCE} epochs with no improvement =====")
+        #     break
 
     # Plot results
     plot_training_curves(train_losses, val_losses, train_accs, val_accs)
