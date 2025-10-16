@@ -10,6 +10,7 @@ Description:
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 from sklearn.metrics import (
     confusion_matrix,
@@ -36,10 +37,10 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 EPOCHS = 450
 PATIENCE = 50  # Stop if no improvement after PATIENCE number of epochs
 LEARNING_RATE = 4e-3
-MIN_LEARNING_RATE = 5e-5
-BATCH_SIZE = 256
+BATCH_SIZE = 512
 WEIGHT_DECAY = 0.01
 LABEL_SMOOTHING = 0.1
+SAVE_DIR = ""
 
 def train_one_epoch(model, dataloader, criterion, optimizer, epoch):
     """
@@ -58,9 +59,9 @@ def train_one_epoch(model, dataloader, criterion, optimizer, epoch):
     model.train()
     total_loss, correct, total = 0.0, 0, 0
 
-    for images, labels in dataloader:
+    for images, labels in tqdm(dataloader, desc=f"Epoch {epoch} [Train]"):
         images, labels = images.to(DEVICE), labels.to(DEVICE)
-        
+
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
@@ -96,7 +97,7 @@ def validate(model, dataloader, criterion, epoch):
     all_preds, all_labels = [], []
 
     with torch.inference_mode():
-        for images, labels in dataloader:
+        for images, labels in tqdm(dataloader, desc=f"Epoch {epoch} [Val]"):
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             outputs = model(images)
             loss = criterion(outputs, labels)
@@ -155,8 +156,8 @@ def plot_training_curves(train_losses, val_losses, train_accs, val_accs, output_
     plt.legend()
 
     plt.tight_layout()
-    
-    save_path = os.path.join(output_dir, "training_curves.png")
+
+    save_path = os.path.join(SAVE_DIR, output_dir, "training_curves.png")
     plt.savefig(save_path)
     plt.close()
     print(f"Saved training curves to {save_path}")
@@ -183,7 +184,7 @@ def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
     all_preds, all_labels = [], []
 
     with torch.inference_mode():
-        for images, labels in test_loader:
+        for images, labels in tqdm(test_loader, desc="Test Set Inference"):
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             outputs = model(images)
             _, predicted = outputs.max(1)
@@ -205,7 +206,7 @@ def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["AD", "NC"])
     disp.plot(cmap="Blues")
     plt.title(f"Test Set Confusion Matrix (Acc: {acc:.4f})")
-    plt.savefig("plots/test_confusion_matrix.png")
+    plt.savefig(os.path.join(SAVE_DIR, "plots/test_confusion_matrix.png"))
     plt.close()
     print("Saved test confusion matrix to plots/test_confusion_matrix.png")
 
@@ -231,7 +232,7 @@ def main():
         model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
     )
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
-        optimizer=optimizer, T_max=EPOCHS, eta_min=MIN_LEARNING_RATE)
+        optimizer=optimizer, T_max=EPOCHS)
 
     # Track metrics
     train_losses, val_losses = [], []
@@ -261,7 +262,7 @@ def main():
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             best_cm = cm
-            torch.save(model.state_dict(), "best_convnext.pth")
+            torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_convnext.pth"))
             print(f"===== 💖 Saved new best model (Val Acc: {best_val_acc:.4f}) =====")
             epochs_no_improve = 0  # reset PATIENCE counter
         else:
@@ -269,9 +270,9 @@ def main():
             print(f"No improvement for {epochs_no_improve}/{PATIENCE} epochs.")
 
         # Early stopping condition
-        # if epochs_no_improve >= PATIENCE:
-        #     print(f"===== Early stopping triggered after {PATIENCE} epochs with no improvement =====")
-        #     break
+        if epochs_no_improve >= PATIENCE:
+            print(f"===== Early stopping triggered after {PATIENCE} epochs with no improvement =====")
+            break
 
     # Plot results
     plot_training_curves(train_losses, val_losses, train_accs, val_accs)
@@ -280,7 +281,7 @@ def main():
     disp = ConfusionMatrixDisplay(confusion_matrix=best_cm, display_labels=["AD", "NC"])
     disp.plot(cmap="Blues")
     plt.title(f"Best Confusion Matrix (Acc: {val_acc:.4f})")
-    cm_path = os.path.join("plots", "val_confusion_matrix.png")
+    cm_path = os.path.join(SAVE_DIR, "plots", "val_confusion_matrix.png")
     plt.savefig(cm_path)
     plt.close()
     print(f"Saved confusion matrix to {cm_path}")
@@ -288,4 +289,4 @@ def main():
     run_inference_on_test_dataset(model=model)
 
 if __name__ == "__main__":
-    main()
+    run_inference_on_test_dataset()
