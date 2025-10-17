@@ -119,8 +119,10 @@ def build_transform(is_train: bool) -> transforms.Compose:
     Returns:
         transforms.Compose: Transformation pipeline.
     """
-    ADNI_DEFAULT_MEAN = 0.116
-    ADNI_DEFAULT_STD = 0.225
+    ADNI_TRAIN_MEAN = 0.11554004
+    ADNI_TRAIN_STD = 0.22236999
+    ADNI_TEST_MEAN = 0.11673328
+    ADNI_TEST_STD = 0.22284401
     IMAGE_SIZE = 224
 
     if is_train:
@@ -138,8 +140,8 @@ def build_transform(is_train: bool) -> transforms.Compose:
             transforms.RandAugment(5, 5),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[ADNI_DEFAULT_MEAN] * 3,
-                std=[ADNI_DEFAULT_STD] * 3
+                mean=[ADNI_TRAIN_MEAN] * 3,
+                std=[ADNI_TRAIN_STD] * 3
             ),
             transforms.RandomErasing(p=0.25),
         ])
@@ -149,7 +151,7 @@ def build_transform(is_train: bool) -> transforms.Compose:
             transforms.Grayscale(num_output_channels=3),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[ADNI_DEFAULT_MEAN] * 3,
-                std=[ADNI_DEFAULT_STD] * 3
+                mean=[ADNI_TEST_MEAN] * 3,
+                std=[ADNI_TEST_STD] * 3
             )
         ])
