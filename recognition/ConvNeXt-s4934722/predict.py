@@ -21,6 +21,11 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 CLASS_NAMES = ["AD", "NC"]
 MODEL_PATH = "./best_convnext.pth"
 
+# ANSI color codes
+GREEN = "\033[92m"
+RED = "\033[91m"
+RESET = "\033[0m"
+
 
 def load_model(model_path=MODEL_PATH):
     """Load the trained custom ConvNeXt model."""
@@ -32,3 +37,21 @@ def load_model(model_path=MODEL_PATH):
     model.eval()
     print("Model loaded successfully.")
     return model
+
+
+def predict_image(model, image_path):
+    """Predict the class of a single image."""
+    image = Image.open(image_path).convert("RGB")
+    transform = build_transform(is_train=False)
+    img_tensor = transform(image).unsqueeze(0).to(DEVICE)
+
+    with torch.inference_mode():
+        outputs = model(img_tensor)
+        probs = torch.softmax(outputs, dim=1)
+        conf, pred_class = torch.max(probs, dim=1)
+
+    label = CLASS_NAMES[pred_class.item()]
+    return label, conf.item()
+
+
+
