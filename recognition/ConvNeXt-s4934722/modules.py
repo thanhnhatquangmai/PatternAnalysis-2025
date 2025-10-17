@@ -193,7 +193,7 @@ class ConvNeXtDownsamplingLayer(nn.Module):
         """Apply downsampling to the input feature map."""
         return self.downsampling_layer(x)
 
-class ConvNext(nn.Module):
+class ConvNeXt(nn.Module):
     """
     ConvNeXt Model Implementation.
 

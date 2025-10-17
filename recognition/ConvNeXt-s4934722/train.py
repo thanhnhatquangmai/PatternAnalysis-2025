@@ -30,7 +30,7 @@ except:
 
 if not IN_COLAB:
     from dataset import get_dataloader
-    from modules import ConvNext
+    from modules import ConvNeXt
 
 # Configuration
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -171,7 +171,7 @@ def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
         batch_size (int): Batch size for testing.
     """
     if model is None:
-        model = ConvNext(num_input_image_channels=3, num_classes=2).to(DEVICE)
+        model = ConvNeXt(num_input_image_channels=3, num_classes=2).to(DEVICE)
         model.load_state_dict(torch.load("best_convnext.pth"))
         batch_size = 128
     # After your training loop, add test inference
@@ -226,7 +226,7 @@ def main():
     print(f"Train batches: {len(train_loader)}, Val batches: {len(val_loader)}")
 
     # Model, loss, optimizer
-    model = ConvNext(num_input_image_channels=3, num_classes=2).to(DEVICE)
+    model = ConvNeXt(num_input_image_channels=3, num_classes=2).to(DEVICE)
     criterion = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING)
     optimizer = optim.AdamW(
         model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
@@ -289,4 +289,3 @@ def main():
     run_inference_on_test_dataset(model=model)
 
 if __name__ == "__main__":
-    run_inference_on_test_dataset()

@@ -64,7 +64,7 @@ def get_dataloader(
 
         # Split by patient IDs (so no patient appears in both sets)
         train_patients, val_patients = train_test_split(
-            unique_patients, test_size=validate_split, random_state=42, shuffle=True
+            unique_patients, test_size=validate_split, shuffle=True
         )
 
         # Gather indices for each split
