@@ -20,6 +20,7 @@ from modules import ConvNeXt
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 CLASS_NAMES = ["AD", "NC"]
 MODEL_PATH = "./best_convnext.pth"
+IMAGE_PATH = "./images/ADNI"
 
 # ANSI color codes
 GREEN = "\033[92m"
@@ -54,4 +55,35 @@ def predict_image(model, image_path):
     return label, conf.item()
 
 
+def predict_folder(model, folder_path):
+    """Run inference on all images in a folder."""
+    print(f"\nRunning inference on folder: {folder_path}\n")
+    for fname in os.listdir(folder_path):
+        if fname.lower().endswith((".png", ".jpg", ".jpeg", ".bmp")):
+            fpath = os.path.join(folder_path, fname)
+            label, conf = predict_image(model, fpath)
 
+            color = GREEN if label == "AD" else RED
+            print(f"{fname:<30} -> {color}{label}{RESET} ({conf:.3f})")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Predict AD/NC using custom ConvNeXt model")
+    parser.add_argument("--path", default=IMAGE_PATH, help="Path to image or folder of images")
+    parser.add_argument("--model", default=MODEL_PATH, help="Path to trained model (.pth)")
+    args = parser.parse_args()
+
+    model = load_model(args.model)
+
+    if os.path.isfile(args.path):
+        label, conf = predict_image(model, args.path)
+        color = GREEN if label == "AD" else RED
+        print(f"\nPrediction: {color}{label}{RESET} (Confidence: {conf:.3f})")
+    elif os.path.isdir(args.path):
+        predict_folder(model, args.path)
+    else:
+        print("Invalid path. Please provide a valid image file or folder.")
+
+
+if __name__ == "__main__":
+    main()
