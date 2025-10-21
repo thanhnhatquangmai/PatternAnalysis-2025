@@ -289,3 +289,4 @@ def main():
     run_inference_on_test_dataset(model=model)
 
 if __name__ == "__main__":
+    main()

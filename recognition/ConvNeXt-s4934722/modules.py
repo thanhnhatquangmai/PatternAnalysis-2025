@@ -1,3 +1,25 @@
+"""
+modules.py
+Author: Thanh Nhat Quang Mai - 49347227
+Date: 21st October 2025
+Description:
+    This file implements the ConvNeXt architecture in PyTorch, including:
+    - ConvNeXtBlock: Core building block with depthwise convolution, normalization,
+        pointwise layers, optional layer scaling, and stochastic depth.
+    - ConvNextStage: A stage consisting of multiple ConvNeXtBlocks operating at the
+        same feature resolution.
+    - ConvNeXtDownsamplingLayer: Performs patch embedding or spatial downsampling
+        between stages.
+    - ConvNeXt: Complete hierarchical model for image classification, combining
+        patchify stem, multiple feature extraction stages, and a final classification head.
+
+    Key features:
+    - Depthwise separable convolutions for computational efficiency.
+    - Layer normalization for stable training.
+    - Optional stochastic depth for regularization.
+    - Scalable design supporting custom block and channel configurations.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -221,7 +243,7 @@ class ConvNeXt(nn.Module):
         num_classes=2,
         num_blocks_each_stage=[3, 3, 9, 3],
         num_channels=[96, 192, 384, 768],
-        stochastic_depth_rate=0.0,
+        stochastic_depth_rate=0.1,
         layer_scale_initial_value=1e-6
     ):
         super().__init__()
