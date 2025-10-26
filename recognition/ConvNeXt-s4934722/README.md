@@ -12,7 +12,11 @@ The ConvNeXt architecture is a pure ConvNet that is modernized from a standard R
 
 *Figure 1. ConvNeXt block architecture, adapted from Liu et al. (2022)* [[2]](#convnext)*.*
 
-The ConvNeXt architecture comprises a serires of stage which consists of multiple consecutive ConvNeXt blocks opearting at the same feature resolution. Each block includes depthwise convolution, layer normalization, pointwise convolution, layer scaling and residual connection with stochastic depth. 
+The ConvNeXt architecture comprises a series of stages which consists of multiple consecutive ConvNeXt blocks opearting at the same feature resolution. Each block includes depthwise convolution, layer normalization, pointwise convolution, layer scaling and residual connection with stochastic depth. As a ConvNet, this model has several built-in inductive biases that make it well-suited for a wide range of computer vision tasks such as classification of MRI images of the brain. It also proves to be efficient as computations are shared when used in a sliding-window manner [[2]](#convnext).
+
+The ConvNeXt architeture consists of the following main components:
+
+### Stage Compute Ratio
 
 ## Dataset Description
 
