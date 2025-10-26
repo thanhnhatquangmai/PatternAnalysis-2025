@@ -6,7 +6,7 @@ This project goal is to classify between Alzheimer's Disease (AD) and Normal Con
 
 ## Model Architecture
 
-The ConvNeXt architecture is a pure ConvNet that is modernized from a standard ResNet toward the design of a vision Transformer. While being much simpler in design, ConvNeXts are reported to achieve the same level of accuracy and scalability as Transformers [[2]](#convnext). The ConvNeXt block architecture is shown below.
+The ConvNeXt architecture is a pure ConvNet that is modernized from a standard ResNet toward the design of a vision Transformer. While being much simpler in design, ConvNeXts are reported to achieve the same level of accuracy and scalability as Transformers [[2]](#convnext). The ConvNeXt block architecture is shown in [Figure 1](#convnext-block).
 
 <a id="convnext-block"></a>
 
@@ -32,7 +32,7 @@ A combination of depthwise convolution and 1 $\times$ 1 convolution is used that
 
 ### Inverted Bottleneck
 
-A convolution with kernel size of 7 $\times$ 7 is used in each block that allows the model to focus on local regions. This enhances the model's ability to capture complex spatial patterns in images by expanding the channels.
+A convolution with kernel size of 7 $\times$ 7 is used in each block that allows the model to focus on local regions. This enhances the model's ability to capture complex spatial patterns in images and identiy subtle anatomical changes in the brain by expanding the channel.
 
 ### Activation Functions
 
@@ -40,13 +40,33 @@ GELU activation is used in each block. The GELU layers are eliminated from resid
 
 ### Normalization Layer
 
-One Layer Normalization layer is used in each block to improve the convergence and reduce overfitting. Layer Normalization is used instead of Batch Normalization as it might have some negative effects on model's performance [[3]](#batchnorm).
+One Layer Normalization layer is used in each block to improve the convergence and reduce overfitting. Layer Normalization is used instead of Batch Normalization as it might have some negative effects on model's performance [[3]](#batchnorm). The use of Layer Normalization is important to improve training stability on small datasets like ADNI.
 
 ### Downsampling Layer
 
-Separate downsampling layers are added between each stages where each of them is a 2 $\times$ 2 convolution layer with stride 2 for spatial downsampling. They reduce the spatial dimension while increasing the number of feature channels which allows the model to concentrate on high-level patterns.
+Separate downsampling layers are added between each stages where each of them is a 2 $\times$ 2 convolution layer with stride 2 for spatial downsampling. They reduce the spatial dimension while increasing the number of feature channels which allows the model to concentrate on high-level patterns in brain anatomy in MRI data.
 
 ## Dataset Description
+
+The ADNI dataset used in this project contains MRI images categorized into Alzheimer's Disease (AD) and Normal Control (NC) groups. Each image in the dataset is grayscale and have a resolution of 256 $\times$ 240 pixels. The filenames follow the format `patientID_index.png` where `patientID` identifies the patient and `index` is the image number. The statistics of the dataset including the number of images and patients across the train and test sets for both classes are shown [Table 1](#adni-table).
+
+<a id="adni-table"></a>
+
+| Dataset Split  | AD Images | NC Images | Total Images | Patients  |
+|----------------|-----------|-----------|--------------|-----------|
+| **Train**      | 10,400    | 11,120    | 21,520       | 1,076     |
+| **Test**       | 4,460     | 4,540     | 9,000        | 450       |
+| **Total**      | 14,860    | 15,660    | 30,520       | 1526      |
+
+**Table 1.** ADNI dataset split statistics (images and patients).
+
+Sample MRI image from the ADNI dataset for Alzheimer's Disease (AD) and Normal Control (NC) classes are shown below.
+
+![AD Sample](images/ADNI/AD_1.jpeg)  
+*Alzheimer's Disease (AD)*
+
+![NC Sample](images/ADNI/NC_1.jpeg)  
+*Normal Control (NC)*
 
 ## Training Process
 
