@@ -1,5 +1,33 @@
 # Alzheimer's Disease Classification using ConvNeXt on the ADNI dataset
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Model Architecture](#model-architecture)
+    - [Stage Compute Ratio](#stage-compute-ratio)
+    - [Patchify Stem](#patchify-stem)
+    - [ResNeXt Design Employment](#resnext-design-employment)
+    - [Inverted Bottleneck](#inverted-bottleneck)
+    - [Activation Functions](#activation-functions)
+    - [Normalization Layer](#normalization-layer)
+    - [Downsampling Layer](#downsampling-layer)
+- [Dataset Description](#dataset-description)
+    - [Overview](#overview-1)
+    - [Preprocessing](#prepocessing)
+    - [Datasplit](#datasplit)
+- [Training Process](#training-process)
+- [Results](#results)
+    - [Performance Metrics](#performance-metrics)
+    - [Example Predictions](#example-predictions)
+- [Usage](#usage)
+    - [Clone the Repository](#clone-the-repository)
+    - [Install Dependencies](#install-dependencies)
+    - [Directory Structure](#directory-structure)
+    - [Adjust Hyperparameters](#adjust-hyperparameters)
+    - [Train the Model](#train-the-model)
+    - [Run Predictions on New Images](#run-predictions-on-new-images)
+- [References](#references)
+
 ## Overview
 
 This project goal is to classify between Alzheimer's Disease (AD) and Normal Control (NC) images in the Alzheimer's Disease Neuroimaging Initiative (ADNI) brain dataset [[1]](#adni-link). Early Alzheimer's detection helps patients take control of their conditions, gain access to necessary support and resources, and make informed plans for the future. ConvNeXt, which is one the latest vision model, is used in this classification problem. Using ConvNeXt architecture, the model reached 80.4% accuracy on the ADNI test dataset.
@@ -204,7 +232,7 @@ ConvNeXt-s4934722/
 ├── images/
 │   ├── ADNI/
 │   └── report/
-|
+│
 ├── dataset.py
 ├── modules.py
 ├── train.py
