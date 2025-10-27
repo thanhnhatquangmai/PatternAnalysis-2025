@@ -6,15 +6,15 @@ This project goal is to classify between Alzheimer's Disease (AD) and Normal Con
 
 ## Model Architecture
 
-The ConvNeXt architecture is a pure ConvNet that is modernized from a standard ResNet toward the design of a vision Transformer. While being much simpler in design, ConvNeXts are reported to achieve the same level of accuracy and scalability as Transformers [[3]](#convnext). The ConvNeXt block architecture is shown in [Figure 1](#convnext-block).
+The ConvNeXt architecture is a pure ConvNet that is modernized from a standard ResNet toward the design of a vision Transformer. While being much simpler in design, ConvNeXts are reported to achieve the same level of accuracy and scalability as Transformers [[4]](#convnext). The ConvNeXt block architecture is shown in [Figure 1](#convnext-block).
 
 <a id="convnext-block"></a>
 
 ![ConvNeXt Block Architecture](images/report/ConvNeXt-Block.png)
 
-*Figure 1. ConvNeXt block architecture, adapted from Liu et al. (2022)* [[3]](#convnext)*.*
+*Figure 1. ConvNeXt block architecture, adapted from Liu et al. (2022)* [[4]](#convnext)*.*
 
-The ConvNeXt architecture comprises a series of stages which consists of multiple consecutive ConvNeXt blocks opearting at the same feature resolution. Each block includes depthwise convolution, layer normalization, pointwise convolution, layer scaling and residual connection with stochastic depth. As a ConvNet, this model has several built-in inductive biases that make it well-suited for a wide range of computer vision tasks such as classification of MRI images of the brain. It also proves to be efficient as computations are shared when used in a sliding-window manner [[3]](#convnext).
+The ConvNeXt architecture comprises a series of stages which consists of multiple consecutive ConvNeXt blocks opearting at the same feature resolution. Each block includes depthwise convolution, layer normalization, pointwise convolution, layer scaling and residual connection with stochastic depth. As a ConvNet, this model has several built-in inductive biases that make it well-suited for a wide range of computer vision tasks such as classification of MRI images of the brain. It also proves to be efficient as computations are shared when used in a sliding-window manner [[4]](#convnext).
 
 The ConvNeXt architeture consists of the following main innovations:
 
@@ -40,7 +40,7 @@ GELU activation is used in each block. The GELU layers are eliminated from resid
 
 ### Normalization Layer
 
-One Layer Normalization layer is used in each block to improve the convergence and reduce overfitting. Layer Normalization is used instead of Batch Normalization as it might have some negative effects on model's performance [[4]](#batchnorm). The use of Layer Normalization is important to improve training stability on small datasets like ADNI.
+One Layer Normalization layer is used in each block to improve the convergence and reduce overfitting. Layer Normalization is used instead of Batch Normalization as it might have some negative effects on model's performance [[5]](#batchnorm). The use of Layer Normalization is important to improve training stability on small datasets like ADNI.
 
 ### Downsampling Layer
 
@@ -82,9 +82,9 @@ All MRI images are preprocessed before training. Images are resized to 224 $\tim
 
 - Random Affine Transformation ($\pm5\%$): moves the image slightly up, down or sideways.
 
-- RandAugment [[2]](#rand-augment) : applies serveral random transformation with different strengths to make the training data more diverse and reduce overfitting, as described in the ConvNeXt paper [[3]](#convnext).
+- RandAugment [[2]](#rand-augment) : applies serveral random transformation with different strengths to make the training data more diverse and reduce overfitting, as described in the ConvNeXt paper [[4]](#convnext).
 
-- RandomErasing [[5]](#random-erasing) ($25\%$): randomly covers small parts of the image, forcing the model to use information from multiple brain regions instead of focusing on one specific area, following the ConvNext paper [[3]](#convnext).
+- RandomErasing [[7]](#random-erasing) ($25\%$): randomly covers small parts of the image, forcing the model to use information from multiple brain regions instead of focusing on one specific area, following the ConvNext paper [[4]](#convnext).
 
 ### Datasplit
 
@@ -92,7 +92,27 @@ The training set is further split into training and validation subsets by patien
 
 ## Training Process
 
+The model was trained on the ADNI dataset using PyTorch framework. The model was trained for 450 epochs with early stopping based on validation accuracy to prevent overfitting. The AdamW optimizer was used to improve training stability and reduce overfitting through weight decay. Regularization schemes such as Label Smoothing and Stochastic Depth were used to improve generalization.
+
+| **Hyperparameter**            | **Value**                             |
+| ------------------------------| --------------------------------------|
+| Optimizer                     | AdamW                                 |
+| Learning Rate                 | 4e-3                                  |
+| Learning Rate Scheduler       | CosineAnnealingLR                     |
+| Weight Decay                  | 0.01                                  |
+| Batch Size                    | 256                                   |
+| Epochs                        | 450                                   |
+| Early Stopping Patience       | 50                                    |
+| Stochastic Depth              | 0.1                                   |
+| Layer Scale                   | 1e-6                                  |
+| Label Smoothing               | 0.1                                   |
+| Loss Function                 | CrossEntropyLoss                      |
+
 ## Results
+
+### Performance Metrics
+
+
 
 ## Usage
 
@@ -100,13 +120,22 @@ The training set is further split into training and validation subsets by patien
 
 <a id="adni-link"></a>[1] Alzheimer's Disease Neuroimaging Initiative (ADNI). [https://adni.loni.usc.edu](https://adni.loni.usc.edu/)
 
-<a id="rand-augment"></a>[2] Cubuk, E. D., Zoph, B., Shlens, J., & Le, Q. V. (2020). *RandAugment: Practical automated data augmentation with a reduced search space*. [https://arxiv.org/abs/1909.13719](https://arxiv.org/abs/1909.13719)
+<a id="rand-augment"></a>[2] Cubuk, E. D., Zoph, B., Shlens, J., & Le, Q. V. (2020). *RandAugment: Practical automated data augmentation with a reduced search space*. In CVPR. [https://arxiv.org/abs/1909.13719](https://arxiv.org/abs/1909.13719)
 
-<a id="convnext"></a>[3] Liu, Z., Mao, H., Wu, C. Y., Feichtenhofer, C., Darrell, T., & Xie, S. (2022). *A ConvNet for the 2020s*. [https://arxiv.org/abs/2201.03545](https://arxiv.org/abs/2201.03545)
+<a id="stochastic-depth"></a>[3] Huang, G., Liu, Z., van der Maaten, L., & Weinberger, K. Q. (2017). *Densely Connected Convolutional Networks (DenseNet)*. In CVPR. [https://arxiv.org/abs/1608.06993](https://arxiv.org/abs/1608.06993)
 
-<a id="batchnorm"></a>[4] Wu, Y., & Johnson, J. (2021). *Rethinking "Batch" in BatchNorm*. [https://arxiv.org/abs/2105.07576](https://arxiv.org/abs/2105.07576)
+<a id="convnext"></a>[4] Liu, Z., Mao, H., Wu, C. Y., Feichtenhofer, C., Darrell, T., & Xie, S. (2022). *A ConvNet for the 2020s*. In CVPR. [https://arxiv.org/abs/2201.03545](https://arxiv.org/abs/2201.03545)
 
-<a id="random-erasing"></a>[5] Zhong, Z., Zheng, L., Kang, G., Li, S., & Yang, Y. (2020). *Random Erasing Data Augmentation*. [https://arxiv.org/abs/1708.04896](https://arxiv.org/abs/1708.04896)
+<a id="batchnorm"></a>[5] Wu, Y., & Johnson, J. (2021). *Rethinking "Batch" in BatchNorm*. [https://arxiv.org/abs/2105.07576](https://arxiv.org/abs/2105.07576)
+
+<a id="label-smoothing"></a>[6] Szegedy, C., Vanhoucke, V., Ioffe, S., Shlens, J., & Wojna, Z. (2016). *Rethinking the Inception Architecture for Computer Vision*. In CVPR. [https://arxiv.org/abs/1512.00567](https://arxiv.org/abs/1512.00567)
+
+<a id="random-erasing"></a>[7] Zhong, Z., Zheng, L., Kang, G., Li, S., & Yang, Y. (2020). *Random Erasing Data Augmentation*. In AAAI. [https://arxiv.org/abs/1708.04896](https://arxiv.org/abs/1708.04896)
+
+
+
+
+
 
 
 
