@@ -122,15 +122,13 @@ def validate(model, dataloader, criterion, epoch):
 
     return avg_loss, accuracy, precision, recall, f1, cm
 
-def plot_training_curves(train_losses, val_losses, train_accs, val_accs, output_dir="plots"):
+def plot_training_curves(train_losses, val_losses, output_dir="plots"):
     """
     Plot and save training & validation loss and accuracy curves over epochs.
 
     Args:
         train_losses (list[float]): Training loss per epoch.
         val_losses (list[float]): Validation loss per epoch.
-        train_accs (list[float]): Training accuracy per epoch.
-        val_accs (list[float]): Validation accuracy per epoch.
         output_dir (str): Directory to save the plots.
     """
     os.makedirs(output_dir, exist_ok=True)
@@ -144,15 +142,6 @@ def plot_training_curves(train_losses, val_losses, train_accs, val_accs, output_
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("Training & Validation Loss")
-    plt.legend()
-
-    # Accuracy plot
-    plt.subplot(1, 2, 2)
-    plt.plot(epochs, train_accs, label="Train Acc")
-    plt.plot(epochs, val_accs, label="Val Acc")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy (%)")
-    plt.title("Training & Validation Accuracy")
     plt.legend()
 
     plt.tight_layout()
@@ -236,9 +225,8 @@ def main():
 
     # Track metrics
     train_losses, val_losses = [], []
-    train_accs, val_accs = [], []
 
-    best_val_acc = 0.0
+    best_val_loss = float("inf")
     best_cm = None
     epochs_no_improve = 0  # Counter for PATIENCE
 
@@ -250,8 +238,6 @@ def main():
 
         train_losses.append(train_loss)
         val_losses.append(val_loss)
-        train_accs.append(train_acc)
-        val_accs.append(val_acc)
 
         print(f"> Epoch {epoch} | "
             f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.4f} | "
@@ -259,11 +245,11 @@ def main():
             f"P: {precision:.3f}, R: {recall:.3f}, F1: {f1:.3f}")
 
         # Check for improvement
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
             best_cm = cm
             torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_convnext.pth"))
-            print(f"===== 💖 Saved new best model (Val Acc: {best_val_acc:.4f}) =====")
+            print(f"===== 💖 Saved new best model (Val Acc: {val_acc:.4f}) =====")
             epochs_no_improve = 0  # reset PATIENCE counter
         else:
             epochs_no_improve += 1
@@ -275,7 +261,7 @@ def main():
             break
 
     # Plot results
-    plot_training_curves(train_losses, val_losses, train_accs, val_accs)
+    plot_training_curves(train_losses, val_losses)
 
     # Save confusion matrix of best model
     disp = ConfusionMatrixDisplay(confusion_matrix=best_cm, display_labels=["AD", "NC"])
@@ -289,4 +275,4 @@ def main():
     run_inference_on_test_dataset(model=model)
 
 if __name__ == "__main__":
-    main()
+    run_inference_on_test_dataset()

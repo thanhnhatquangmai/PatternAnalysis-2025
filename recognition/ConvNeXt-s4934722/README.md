@@ -50,7 +50,7 @@ Separate downsampling layers are added between each stages where each of them is
 
 ### Overview
 
-The ADNI dataset used in this project contains MRI images categorized into Alzheimer's Disease (AD) and Normal Control (NC) groups. Each image in the dataset is grayscale and have a resolution of 256 $\times$ 240 pixels. The filenames follow the format `patientID_index.png` where `patientID` identifies the patient and `index` is the image number. The statistics of the dataset including the number of images and patients across the train and test sets for both classes are shown [Table 1](#adni-table).
+The ADNI dataset used in this project contains MRI images categorized into Alzheimer's Disease (AD) and Normal Control (NC) groups. Each image in the dataset is grayscale and have a resolution of 256 $\times$ 240 pixels. The filenames follow the format `patientID_index.png` where `patientID` identifies the patient and `index` is the image number. The statistics of the dataset including the number of images and patients across the train and test sets for both classes are shown in [Table 1](#adni-table).
 
 <a id="adni-table"></a>
 
@@ -92,7 +92,7 @@ The training set is further split into training and validation subsets by patien
 
 ## Training Process
 
-The model was trained on the ADNI dataset using PyTorch framework. The model was trained for 450 epochs with early stopping based on validation accuracy to prevent overfitting. The AdamW optimizer was used to improve training stability and reduce overfitting through weight decay. Regularization schemes such as Label Smoothing and Stochastic Depth were used to improve generalization.
+The model was trained on the ADNI dataset using PyTorch framework. The model was trained for 450 epochs with early stopping based on validation loss to prevent overfitting. The AdamW optimizer was used to improve training stability and reduce overfitting through weight decay. Regularization schemes such as Label Smoothing and Stochastic Depth were used to improve generalization.
 
 | **Hyperparameter**            | **Value**                             |
 | ------------------------------| --------------------------------------|
@@ -111,6 +111,26 @@ The model was trained on the ADNI dataset using PyTorch framework. The model was
 ## Results
 
 ### Performance Metrics
+
+The training and validation loss recorded for each epoch are shown in [Figure 2](#training-curves). The model was trained for 450 epochs, and the best model was selected at epoch 430, where it got the lowest validation loss. The close alignment between the training and validation loss curves indicates that the model achieved good generalization without signs of overfitting as the validation performance remained stable throughout the later epochs.
+
+<a id="training-curves"></a>
+
+![Training Curves](images/report/training_curves.png)
+
+Figure 2. Training and Validation Loss Curves
+
+To evaluate the model's performance on unseen data, the test set was used. The model achieved a **test accuracy of 0.804**, with a precision of 0.761, recall of 0.892, and an F1-score of 0.821. These results show that the model performs well overall, with particularly strong recall suggesting a good sensitiviy in detecting positive cases.
+
+The confusion matrix for test results is shown in [Figure 3](#confusion-matrix). The results demonstate that ConvNeXt can effectively distinguish between AD and NC brain MRIs.
+
+<a id="confusion-matrix"></a>
+
+![Confusion Matrix](images/report/confusion_matrix.png)
+
+Figure 3. Confusion Matrix
+
+### Example Predictions
 
 
 
