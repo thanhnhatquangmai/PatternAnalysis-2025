@@ -175,14 +175,14 @@ Figure 4. Test Set Confusion Matrix
 
 [Table 3](#example-predictions) shows example predictions of the ConvNeXt model on some test images, including the predicted table and corresponding confidence scores for selected AD and NC images.
 
-| Image                                | True Label | Predicted Label | Confidence |
-| ------------------------------------ | ---------- | --------------- | ---------- |
-| ![AD\_1.jpeg](images/ADNI/AD_1.jpeg) | AD         | AD              | 0.913      |
-| ![AD\_2.jpeg](images/ADNI/AD_2.jpeg) | AD         | AD              | 0.755      |
-| ![AD\_3.jpeg](images/ADNI/AD_3.jpeg) | AD         | AD              | 0.798      |
-| ![NC\_1.jpeg](images/ADNI/NC_1.jpeg) | NC         | NC              | 0.954      |
-| ![NC\_2.jpeg](images/ADNI/NC_2.jpeg) | NC         | NC              | 0.955      |
-| ![NC\_3.jpeg](images/ADNI/NC_3.jpeg) | NC         | NC              | 0.955      |
+| Image                                | True Label | Predicted Label | Confidence | GradCam Visualisation                    |
+| ------------------------------------ | ---------- | --------------- | ---------- | ---------------------------------------- |
+| ![AD_1.jpeg](images/ADNI/AD_1.jpeg)  | AD         | AD              | 0.943      | ![AD_1_cam.jpeg](images/ADNI/AD_1_cam.jpg)
+| ![AD_2.jpeg](images/ADNI/AD_2.jpeg)  | AD         | AD              | 0.755      | ![AD_2_cam.jpeg](images/ADNI/AD_2_cam.jpg)
+| ![AD_3.jpeg](images/ADNI/AD_3.jpeg)  | AD         | AD              | 0.942      | ![AD_3_cam.jpeg](images/ADNI/AD_3_cam.jpg)
+| ![NC_1.jpeg](images/ADNI/NC_1.jpeg)  | NC         | NC              | 0.954      | ![NC_1_cam.jpeg](images/ADNI/NC_1_cam.jpg)
+| ![NC_2.jpeg](images/ADNI/NC_2.jpeg)  | NC         | NC              | 0.955      | ![NC_2_cam.jpeg](images/ADNI/NC_2_cam.jpg)
+| ![NC_3.jpeg](images/ADNI/NC_3.jpeg)  | NC         | NC              | 0.955      | ![NC_3_cam.jpeg](images/ADNI/NC_3_cam.jpg)
 
 Table 3. Example test set predictions of the ConvNeXt model with corresponding confidence scores.
 
@@ -273,21 +273,22 @@ Once the model is trained, you can run inference on MRI images.
 To predict a single image:
 
 ```bash
-python predict.py [--path path/to/image.jpeg] [--model path/to/model.pth]
+python predict.py [--path path/to/image.jpeg] [--model path/to/model.pth] [--cam]
 ```
 
 Multiple images can also be processed from a folder:
 
 ```bash
-python predict.py [--path path/to/folder] [--model path/to/model.pth]
+python predict.py [--path path/to/folder] [--model path/to/model.pth] [--cam]
 ```
+
+If `--cam` is included, the script generates and saves GradCam visualisations overlayed on the original MRi images.
 
 If no arguments are provided, the script defaults to:
 
-```bash
---path=./images/ADNI
---model=./best_convnext.pth
-```
+`--path=./images/ADNI`
+
+`--model=./best_convnext.pth`
 
 Example output:
 
@@ -297,16 +298,18 @@ Model loaded successfully.
 
 Running inference on folder: ./images/ADNI
 
-AD_1.jpeg                      -> AD (0.913)
+Saved CAM: ./images/ADNI\AD_1_cam.jpg
+AD_1.jpeg                      -> AD (0.943)
+Saved CAM: ./images/ADNI\AD_2_cam.jpg
 AD_2.jpeg                      -> AD (0.755)
-AD_3.jpeg                      -> AD (0.798)
-AD_4.jpeg                      -> AD (0.594)
-AD_5.jpeg                      -> AD (0.580)
+Saved CAM: ./images/ADNI\AD_3_cam.jpg
+AD_3.jpeg                      -> AD (0.942)
+Saved CAM: ./images/ADNI\NC_1_cam.jpg
 NC_1.jpeg                      -> NC (0.954)
+Saved CAM: ./images/ADNI\NC_2_cam.jpg
 NC_2.jpeg                      -> NC (0.955)
+Saved CAM: ./images/ADNI\NC_3_cam.jpg
 NC_3.jpeg                      -> NC (0.955)
-NC_4.jpeg                      -> NC (0.946)
-NC_5.jpeg                      -> NC (0.954)
 ```
 
 ## References
