@@ -160,6 +160,127 @@ Table 3. Example test set predictions of the ConvNeXt model with corresponding c
 
 ## Usage
 
+### Clone the Repository
+
+Clone the project from GitHub.
+
+```bash
+git clone https://github.com/thanhnhatquangmai/PatternAnalysis-2025.git
+git checkout topic-recognition
+cd ./recognition/ConvNeXt-s4934722
+```
+
+### Install Dependencies
+
+This project requires Python 3.9.0 so ensure it is installed before proceeding. Then install the required packages.
+
+```bash
+pip install -r requirements.txt
+```
+
+### Directory Structure
+
+The directory is assumed to follow this structure.
+
+```bash
+ConvNeXt-s4934722/
+├── ADNI/
+│   └── AD_NC/
+│       ├── train/
+│       │   ├── AD/
+│       │   │   ├── 388206_78.jpeg
+│       │   │   └── ...
+│       │   └── NC/
+│       │       ├── 1182968_94.jpeg
+│       │       └── ...
+│       └── test/
+│           ├── AD/
+│           │   ├── 218391_78.jpeg
+│           │   └── ...
+│           └── NC/
+│               ├── 808819_88.jpeg
+│               └── ...
+│
+├── images/
+│   ├── ADNI/
+│   └── report/
+|
+├── dataset.py
+├── modules.py
+├── train.py
+├── predict.py
+└── requirements.txt
+```
+
+### Adjust Hyperparameters
+
+Key hyperparameters such as batch size, learning rate, number of epochs, or label smoothing can be modified in `train.py`.
+
+```python
+EPOCHS = 450
+LEARNING_RATE = 4e-3
+BATCH_SIZE = 256
+LABEL_SMOOTHING = 0.1
+```
+
+### Train the Model
+
+Run the training pipeline to train the model.
+
+```bash
+python train.py
+```
+
+This will:
+
+- Load and preprocess the dataset.
+- Train the ConvNeXt model.
+- Save the best model checkpoint (`best_convnext.pth`)
+- Generate training/validation loss plots and confusion matrices under `plots/`
+
+### Run Predictions on New Images
+
+Once the model is trained, you can run inference on MRI images.
+
+To predict a single image:
+
+```bash
+python predict.py [--path path/to/image.jpeg] [--model path/to/model.pth]
+```
+
+Multiple images can also be processed from a folder:
+
+```bash
+python predict.py [--path path/to/folder] [--model path/to/model.pth]
+```
+
+If no arguments are provided, the script defaults to:
+
+```bash
+--path=./images/ADNI
+--model=./best_convnext.pth
+```
+
+Example output:
+
+```bash
+Loading model from: ./best_convnext.pth
+Model loaded successfully.
+
+Running inference on folder: ./images/ADNI
+
+AD_1.jpeg                      -> AD (0.913)
+AD_2.jpeg                      -> AD (0.755)
+AD_3.jpeg                      -> AD (0.798)
+AD_4.jpeg                      -> AD (0.594)
+AD_5.jpeg                      -> AD (0.580)
+NC_1.jpeg                      -> NC (0.954)
+NC_2.jpeg                      -> NC (0.955)
+NC_3.jpeg                      -> NC (0.955)
+NC_4.jpeg                      -> NC (0.946)
+NC_5.jpeg                      -> NC (0.954)
+```
+
 ## References
 
 <a id="adni-link"></a>[1] Alzheimer's Disease Neuroimaging Initiative (ADNI). [https://adni.loni.usc.edu](https://adni.loni.usc.edu/)
