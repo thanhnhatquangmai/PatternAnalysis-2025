@@ -171,9 +171,19 @@ The confusion matrix for test results is shown in [Figure 4](#confusion-matrix).
 
 Figure 4. Test Set Confusion Matrix
 
+The UMAP visualization in [Figure 5](#umap) shows clear separation between AD and NC embeddings. The NC cluster is more compact and well-defined suggesting the model learned more consistent representations for NC samples compared to AD.
+
+<a id="umap"></a>
+
+![UMAP](images/report/umap.png)
+
+Figure 5. UMAP projection of test set feature embeddings.
+
 ### Example Predictions
 
-[Table 3](#example-predictions) shows example predictions of the ConvNeXt model on some test images, including the predicted table and corresponding confidence scores for selected AD and NC images.
+[Table 3](#predictions) shows example predictions of the ConvNeXt model on some test images, including the predicted table and corresponding confidence scores for selected AD and NC images.
+
+<a id="predictions"></a>
 
 | Image                                | True Label | Predicted Label | Confidence | GradCam Visualisation                    |
 | ------------------------------------ | ---------- | --------------- | ---------- | ---------------------------------------- |

@@ -21,6 +21,9 @@ from sklearn.metrics import (
 )
 import numpy as np
 import os
+from sklearn.manifold import TSNE
+import umap.umap_ as umap
+import seaborn as sns
 
 try:
     import google.colab
@@ -153,51 +156,89 @@ def plot_training_curves(train_losses, val_losses, output_dir="plots"):
 
 def run_inference_on_test_dataset(model=None, batch_size=BATCH_SIZE):
     """
-    Run inference on the test dataset and display performance metrics.
-
-    Args:
-        model (nn.Module | None): Trained model to evaluate. Loads best checkpoint if None.
-        batch_size (int): Batch size for testing.
+    Run inference on the test dataset, display metrics, confusion matrix,
+    and visualize feature embeddings using UMAP.
     """
     if model is None:
         model = ConvNeXt(num_input_image_channels=3, num_classes=2).to(DEVICE)
-        model.load_state_dict(torch.load("best_convnext.pth"))
+        model.load_state_dict(torch.load("best_convnext.pth", map_location=DEVICE))
         batch_size = 128
-    # After your training loop, add test inference
-    print("===== Running inference on test set =====")
 
-    # Load test dataloader
+    print("===== Running inference on test set =====")
     test_loader = get_dataloader(is_train=False, batch_size=batch_size)
     model.eval()
 
     all_preds, all_labels = [], []
+    features = []  # Store feature embeddings before classification
 
     with torch.inference_mode():
         for images, labels in tqdm(test_loader, desc="Test Set Inference"):
             images, labels = images.to(DEVICE), labels.to(DEVICE)
-            outputs = model(images)
+
+            # === Forward pass (matching the model's internal architecture) ===
+            x = images
+            for i in range(model.num_stages):
+                x = model.downsampling_layers[i](x)
+                x = model.stages[i](x)
+
+            # Global average pooling (before final classification)
+            x = model.avgpool(x)
+            x = x.view(x.size(0), -1)  # flatten (B, feature_dim)
+            feats = x.detach().cpu().numpy()  # Store features for UMAP
+
+            outputs = model.classifier(x)  # classification logits
             _, predicted = outputs.max(1)
 
             all_preds.extend(predicted.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
+            features.append(feats)
 
+    # Concatenate features from all batches
+    features = np.concatenate(features, axis=0)
+
+    # --- Compute classification metrics ---
     precision = precision_score(all_labels, all_preds)
     recall = recall_score(all_labels, all_preds)
     f1 = f1_score(all_labels, all_preds)
     cm = confusion_matrix(all_labels, all_preds)
-    acc = np.sum(np.array(all_preds) == np.array(all_labels)) / len(all_labels)
+    acc = np.mean(np.array(all_preds) == np.array(all_labels))
 
     print(f"Test Accuracy: {acc:.4f}")
     print(f"Precision: {precision:.3f}, Recall: {recall:.3f}, F1-score: {f1:.3f}")
 
-    # Save confusion matrix
+    # --- Save confusion matrix ---
     os.makedirs("plots", exist_ok=True)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["AD", "NC"])
     disp.plot(cmap="Blues")
     plt.title(f"Test Set Confusion Matrix (Acc: {acc:.4f})")
-    plt.savefig(os.path.join(SAVE_DIR, "plots/test_confusion_matrix.png"))
+    plt.savefig(os.path.join("plots", "test_confusion_matrix.png"))
     plt.close()
     print("Saved test confusion matrix to plots/test_confusion_matrix.png")
+
+    # --- UMAP visualization ---
+    print("Running UMAP dimensionality reduction...")
+    reducer = umap.UMAP(n_neighbors=15, min_dist=0.1, metric="cosine", random_state=42)
+    embeddings_2d = reducer.fit_transform(features)
+
+    plt.figure(figsize=(8, 6))
+    sns.scatterplot(
+        x=embeddings_2d[:, 0],
+        y=embeddings_2d[:, 1],
+        hue=["AD" if lbl == 0 else "NC" for lbl in all_labels],
+        palette={"AD": "red", "NC": "blue"},
+        alpha=0.7,
+        s=40
+    )
+    plt.title("UMAP Projection of Test Set Feature Embeddings")
+    plt.xlabel("UMAP-1")
+    plt.ylabel("UMAP-2")
+    plt.legend(title="Label")
+    os.makedirs(os.path.join("plots"), exist_ok=True)
+    umap_path = os.path.join("plots", "umap.png")
+    plt.savefig(umap_path)
+    plt.close()
+    print(f"Saved UMAP visualization to {umap_path}")
+
 
 def main():
     """

@@ -9,3 +9,5 @@ torchcam
 torchmetrics
 torchvision
 tqdm
+seaborn
+umap-learn
