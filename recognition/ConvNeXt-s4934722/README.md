@@ -30,7 +30,7 @@
 
 ## Overview
 
-This project goal is to classify between Alzheimer's Disease (AD) and Normal Control (NC) images in the Alzheimer's Disease Neuroimaging Initiative (ADNI) brain dataset [[1]](#adni-link). Early Alzheimer's detection helps patients take control of their conditions, gain access to necessary support and resources, and make informed plans for the future. ConvNeXt, which is one the latest vision model, is used in this classification problem. Using ConvNeXt architecture, the model reached 80.4% accuracy on the ADNI test dataset.
+This project goal is to classify between Alzheimer's Disease (AD) and Normal Control (NC) images in the Alzheimer's Disease Neuroimaging Initiative (ADNI) brain dataset [[1]](#adni-link). Early Alzheimer's detection helps patients take control of their conditions, gain access to necessary support and resources, and make informed plans for the future. ConvNeXt, which is one of the latest vision models, is used in this classification problem. Using the ConvNeXt architecture, the model reached 80.4% accuracy on the ADNI test dataset.
 
 ## Model Architecture
 
@@ -43,7 +43,7 @@ The ConvNeXt architecture is a pure ConvNet that is modernized from a standard R
 Figure 1. ConvNeXt block architecture, adapted from Liu et al. (2022) [[5]](#convnext).
 
 
-The ConvNeXt architecture in [Figure 2](#convnext-structure) comprises a series of stages which consists of multiple consecutive ConvNeXt blocks opearting at the same feature resolution. Each block includes depthwise convolution, layer normalization, pointwise convolution, layer scaling and residual connection with stochastic depth. As a ConvNet, this model has several built-in inductive biases that make it well-suited for a wide range of computer vision tasks such as classification of MRI images of the brain. It also proves to be efficient as computations are shared when used in a sliding-window manner [[5]](#convnext).
+The ConvNeXt architecture in [Figure 2](#convnext-structure) comprises a series of stages which consist of multiple consecutive ConvNeXt blocks operating at the same feature resolution. Each block includes depthwise convolution, layer normalization, pointwise convolution, layer scaling and residual connection with stochastic depth. As a ConvNet, this model has several built-in inductive biases that make it well-suited for a wide range of computer vision tasks, such as the classification of MRI images of the brain. It also proves to be efficient as computations are shared when used in a sliding-window manner [[5]](#convnext).
 
 <a id="convnext-structure"></a>
 
@@ -55,37 +55,37 @@ The ConvNeXt architeture consists of the following main innovations:
 
 ### Stage Compute Ratio
 
-ConvNext has 4 stages and the number of blocks each stage is changed from (3, 4, 6, 3) in ResNet-50 to (3, 3, 9, 3).
+ConvNext has 4 stages, and the number of blocks in each stage is changed from (3, 4, 6, 3) in ResNet-50 to (3, 3, 9, 3).
 
 ### "Patchify" Stem
 
-A simple "Patchify" stem (4 x 4 non-overlapping convolution) are used in this model to downsample input images to mimic the design of ViT to downsample the input images.
+A simple "Patchify" stem (4 x 4 non-overlapping convolution) is used in this model to downsample input images to mimic the design of ViT.
 
 ### ResNeXt Design Employment
 
-A combination of depthwise convolution and 1 x 1 convolution is used that imitates the self-attention mechanism in Transformers. Network width increases to 96 channels. Channel-mixing design allows model to combine local features of images, especially medical images like in ADNI MRI dataset between different brain structures. Thus, the model can preserve both local and global pattern leading to better diagnostic.
+A combination of depthwise convolution and 1 x 1 convolution is used that imitates the self-attention mechanism in Transformers. Network width increases to 96 channels. Channel-mixing design allows the model to combine local features of images, especially medical images, like in the ADNI MRI dataset, between different brain structures. Thus, the model can preserve both local and global patterns, leading to better diagnostics.
 
 ### Inverted Bottleneck
 
-A convolution with kernel size of 7 x 7 is used in each block that allows the model to focus on local regions. This enhances the model's ability to capture complex spatial patterns in images and identiy subtle anatomical changes in the brain by expanding the channel.
+A convolution with a kernel size of 7 x 7 is used in each block, which allows the model to focus on local regions. This enhances the model's ability to capture complex spatial patterns in images and identify subtle anatomical changes in the brain by expanding the channel.
 
 ### Activation Functions
 
-GELU activation is used in each block. The GELU layers are eliminated from residual block except for one between two 1 x 1 layers as seen in [Figure 1](#convnext-block). Fewer activation functions per layer helps to increase gradient flow and better preserve the information across layers.
+GELU activation is used in each block. The GELU layers are eliminated from the residual block except for one between two 1 x 1 layers, as seen in [Figure 1](#convnext-block). Fewer activation functions per layer help to increase gradient flow and better preserve the information across layers.
 
 ### Normalization Layer
 
-One Layer Normalization layer is used in each block to improve the convergence and reduce overfitting. Layer Normalization is used instead of Batch Normalization as it might have some negative effects on model's performance [[6]](#batchnorm). The use of Layer Normalization is important to improve training stability on small datasets like ADNI.
+A Layer Normalization layer is used in each block to improve the convergence and reduce overfitting. Layer Normalization is used instead of Batch Normalization as it might have some negative effects on the model's performance [[6]](#batchnorm). The use of Layer Normalization is important to improve training stability on small datasets like ADNI.
 
 ### Downsampling Layer
 
-Separate downsampling layers are added between each stages where each of them is a 2 x 2 convolution layer with stride 2 for spatial downsampling. They reduce the spatial dimension while increasing the number of feature channels which allows the model to concentrate on high-level patterns in brain anatomy in MRI data.
+Separate downsampling layers are added between each stage, where each of them is a 2 x 2 convolution layer with a stride of 2 for spatial downsampling. They reduce the spatial dimension while increasing the number of feature channels, which allows the model to concentrate on high-level patterns in brain anatomy in MRI data.
 
 ## Dataset Description
 
 ### Overview
 
-The ADNI dataset used in this project contains MRI images categorized into Alzheimer's Disease (AD) and Normal Control (NC) groups. Each image in the dataset is grayscale and have a resolution of 256 x 240 pixels. The filenames follow the format `patientID_index.png` where `patientID` identifies the patient and `index` is the image number. The statistics of the dataset including the number of images and patients across the train and test sets for both classes are shown in [Table 1](#adni-table).
+The ADNI dataset used in this project contains MRI images categorized into Alzheimer's Disease (AD) and Normal Control (NC) groups. Each image in the dataset is grayscale and has a resolution of 256 x 240 pixels. The filenames follow the format `patientID_index.png` where `patientID` identifies the patient and `index` is the image number. The statistics of the dataset, including the number of images and patients across the train and test sets for both classes, are shown in [Table 1](#adni-table).
 
 <a id="adni-table"></a>
 
@@ -97,7 +97,7 @@ The ADNI dataset used in this project contains MRI images categorized into Alzhe
 
 Table 1. ADNI dataset split statistics (images and patients).
 
-Sample MRI image from the ADNI dataset for Alzheimer's Disease (AD) and Normal Control (NC) classes are shown below.
+Sample MRI images from the ADNI dataset for Alzheimer's Disease (AD) and Normal Control (NC) classes are shown below.
 
 ![AD Sample](images/ADNI/AD_1.jpeg)  
 Alzheimer's Disease (AD)
@@ -107,7 +107,7 @@ Normal Control (NC)
 
 ### Prepocessing
 
-All MRI images are preprocessed before training. Images are resized to 224 x 224, converted to 3 channels to match input format of ConvNeXt and normalized using specific mean and standard deviation for each dataset. To enhance model's generalization and prevent overfitting, various data augmentation techniques are used:
+All MRI images are preprocessed before training. Images are resized to 224 x 224, converted to 3 channels to match the input format of ConvNeXt and normalized using specific mean and standard deviation for each dataset. To enhance the model's generalization and prevent overfitting, various data augmentation techniques are used:
 
 - Horizontal Flipping: randomly flips the MRI image left to right.
 
@@ -117,7 +117,7 @@ All MRI images are preprocessed before training. Images are resized to 224 x 224
 
 - Random Affine Transformation (0.05): moves the image slightly up, down or sideways.
 
-- RandAugment [[2]](#rand-augment) : applies serveral random transformation with different strengths to make the training data more diverse and reduce overfitting, as described in the ConvNeXt paper [[5]](#convnext).
+- RandAugment [[2]](#rand-augment) : applies several random transformations with different strengths to make the training data more diverse and reduce overfitting, as described in the ConvNeXt paper [[5]](#convnext).
 
 - RandomErasing [[8]](#random-erasing) (0.25): randomly covers small parts of the image, forcing the model to use information from multiple brain regions instead of focusing on one specific area, following the ConvNext paper [[5]](#convnext).
 
@@ -127,7 +127,7 @@ The training set is further split into training and validation subsets by patien
 
 ## Training Process
 
-The model was trained on the ADNI dataset using PyTorch framework. The model was trained for 450 epochs with early stopping based on validation loss to prevent overfitting. The AdamW optimizer was used to improve training stability and reduce overfitting through weight decay. Regularization schemes such as Label Smoothing [[7]](#label-smoothing) and Stochastic Depth [[4]](#stochastic-depth) were used to improve generalization.
+The model was trained on the ADNI dataset using the PyTorch framework. The model was trained for 450 epochs with early stopping based on validation loss to prevent overfitting. The AdamW optimizer was used to improve training stability and reduce overfitting through weight decay. Regularization schemes such as Label Smoothing [[7]](#label-smoothing) and Stochastic Depth [[4]](#stochastic-depth) were used to improve generalization.
 
 The main hyperparameters used in the training process are summarized in [Table 2](#hyperparameters)
 
@@ -153,7 +153,7 @@ Table 2. Summary of hyperparameters and training configuration.
 
 ### Performance Metrics
 
-The training and validation loss recorded for each epoch are shown in [Figure 3](#training-curves). The model was trained for 450 epochs, and the best model was selected at epoch 430, where it got the lowest validation loss. The close alignment between the training and validation loss curves indicates that the model achieved good generalization without signs of overfitting as the validation performance remained stable throughout the later epochs.
+The training and validation loss recorded for each epoch are shown in [Figure 3](#training-curves). The model was trained for 450 epochs, and the best model was selected at epoch 430, where it got the lowest validation loss. The close alignment between the training and validation loss curves indicates that the model achieved good generalization without signs of overfitting, as the validation performance remained stable throughout the later epochs.
 
 <a id="training-curves"></a>
 
@@ -161,9 +161,9 @@ The training and validation loss recorded for each epoch are shown in [Figure 3]
 
 Figure 3. Training and Validation Loss Curves
 
-To evaluate the model's performance on unseen data, the test set was used. The model achieved a **test accuracy of 0.804**, with a precision of 0.761, recall of 0.892, and an F1-score of 0.821. These results show that the model performs well overall, with particularly strong recall suggesting a good sensitiviy in detecting positive cases.
+To evaluate the model's performance on unseen data, the test set was used. The model achieved a **test accuracy of 0.804**, with a precision of 0.761, recall of 0.892, and an F1-score of 0.821. These results show that the model performs well overall, with particularly strong recall suggesting a good sensitivity in detecting positive cases.
 
-The confusion matrix for test results is shown in [Figure 4](#confusion-matrix). The results demonstate that ConvNeXt can effectively distinguish between AD and NC brain MRIs.
+The confusion matrix for test results is shown in [Figure 4](#confusion-matrix). The results demonstrate that ConvNeXt can effectively distinguish between AD and NC brain MRIs.
 
 <a id="confusion-matrix"></a>
 
@@ -171,7 +171,7 @@ The confusion matrix for test results is shown in [Figure 4](#confusion-matrix).
 
 Figure 4. Test Set Confusion Matrix
 
-The UMAP visualization in [Figure 5](#umap) shows clear separation between AD and NC embeddings. The NC cluster is more compact and well-defined suggesting the model learned more consistent representations for NC samples compared to AD.
+The UMAP visualization in [Figure 5](#umap) shows clear separation between AD and NC embeddings. The NC cluster is more compact and well-defined, suggesting the model learned more consistent representations for NC samples compared to AD.
 
 <a id="umap"></a>
 
@@ -210,7 +210,7 @@ cd ./recognition/ConvNeXt-s4934722
 
 ### Install Dependencies
 
-This project requires Python 3.9.0 so ensure it is installed before proceeding. Then install the required packages.
+This project requires Python 3.9.0, so ensure it is installed before proceeding. Then install the required packages.
 
 ```bash
 pip install -r requirements.txt
